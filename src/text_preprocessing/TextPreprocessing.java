@@ -4,15 +4,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
+import org.apache.commons.lang3.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class TextPreprocessing {
 
 	private String text_path;
 	private String resulting_string;
 	private LinkedList<String> random_words;
-	private char [] alphabet = {'a', 'b', 'c', 'd', 'e', 'f',
-			'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 
-			'q','r','s','t','u', 'v', 'w', 'x', 'y', 'z'};
+
 	private int N;
 	
 	public TextPreprocessing(String text){
@@ -20,6 +22,7 @@ public class TextPreprocessing {
 		setText_path(text);
 		resulting_string="";
 		setN(0);
+		random_words= new LinkedList<String>();
 	}
 	
 	public void preprocessing(){
@@ -31,10 +34,10 @@ public class TextPreprocessing {
 			br = new BufferedReader(new FileReader(text_path));
 
 			while ((line = br.readLine()) != null) {
-				System.out.println(line);
+				//System.out.println(line);
 				line=standarizeString(line);
 				resulting_string +=line;
-				System.out.println(line);
+				//System.out.println(line);
 			}
 			
 			
@@ -51,20 +54,12 @@ public class TextPreprocessing {
 	
 	public String standarizeString(String input){
 		
+		if(input==null) return "";
 		input= input.toLowerCase();
-		/*Replacing 'accented' a with a simple a*/
-		input = input.replace('á', 'a').replace('a', 'a');
-		/*Replacing 'accented' e with a simple e*/
-		
-		/*Replacing 'accented' i with a simple i*/
-		
-		/*Replacing 'accented' o with a simple o*/
-		
-		
-		/*Replacing 'accented' u with a simple u*/
-		
-		input= input.replace('\n', '\t');
-		
+		/*Removing accents*/
+		input=StringUtils.stripAccents(input).replaceAll("[^a-zA-Z ]", "");
+		input= input.replaceAll("\n", " ");
+		Normalizer.normalize(input, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 		return input;
 	}
 	
@@ -73,22 +68,39 @@ public class TextPreprocessing {
 		String [] splitted = resulting_string.split(" |\t");
 		int len = splitted.length;
 		double approx;
-		
-		for(int i = 15; i<=25;i++){
+		int i;
+		for(i = 15; i<=25;i++){
 			approx = Math.pow(2.0, i);
 			if(len<=approx+approx*0.5 && len>approx-approx*0.5){
 				setN((int)approx);
 				break;
 			}
 		}
-		if(N==0) throw new Exception("There are not enough words");
-		
+		if(N==0) throw new Exception("There are not enough words or number of words exceeds the superior limit\n");
+		else System.out.println(String.format("There are enough words to proceed: %d, 2^%d words", getN(),i));
 		int n_words = N/10;
+		int rnd;
 		
-		for(int i=0;i<n_words;i++){
-			
+		for(int j=0;j<n_words;j++){
+			/*Generate random numbers*/
+			rnd = ThreadLocalRandom.current().nextInt(0, len);
+			while(splitted[rnd].equals("")) rnd = ThreadLocalRandom.current().nextInt(0, len);
+			random_words.add(splitted[rnd]);
+			//System.out.println(String.format("Word: %s, number %d",splitted[rnd], rnd));
 		}
 		
+	}
+	
+	public void removeSpaces(){
+		resulting_string=resulting_string.replaceAll("\t", "").replaceAll(" ", "");
+	}
+
+	public LinkedList<String> getRandom_words() {
+		return random_words;
+	}
+
+	public void setRandom_words(LinkedList<String> random_words) {
+		this.random_words = random_words;
 	}
 
 	public String getResulting_string() {
