@@ -1,5 +1,6 @@
 package suffix_array;
 
+import java.lang.management.MemoryUsage;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -10,25 +11,26 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class SuffixArray {
 
-	private int [] suffix_array;
-	private String [] SA;
+	
+	private Pair [] SA;
 	private String token_string;
-	private String [] tokenSA;
-	private String [] mod12;
-	private String [] mod0;
+	private Pair [] tokenSA;
+	private Pair []  mod12;
+	private Pair [] mod0;
+	protected String [] words; 
 	HashMap<String, Character> mapped_token; 
 	int n;
 	private String input;
-	private RadixSort rs;
 	char d;
 	private long exec_time;
 	
-	public SuffixArray(String input){
-		d=0;
+	public SuffixArray(String input, String [] words){
+		d=100;
 		this.input = input;
 		n = input.length();
 		setToken_string("");
 		mapped_token = new HashMap<String, Character>();
+		this.words =words;
 		//suffix_array = new int [n];
 	}
 	
@@ -42,44 +44,71 @@ public class SuffixArray {
 
 	public void createMod120(){
 		/*This could not be a multiple of 3*/
+		System.err.println("createMod120");
 		exec_time = System.currentTimeMillis();
-		LinkedList<String> mod1_s = new LinkedList<String>();
-		LinkedList<String> mod2_s = new LinkedList<String>();
-	
-		for(int i=1;i<n;i++){
-			if(i % 3 == 1 && input.substring(i).length()>=3){
-				mod1_s.add(input.substring(i, i+3));
-				
+		Pair [] mod1, mod2;
+		
+		if(n%3==0){
+			mod1 = new Pair[(int)Math.floorDiv(n, 3)-1];
+			mod2 = new Pair[(int)Math.floorDiv(n, 3)-1];
+			
+			for(int i=0; i<mod1.length; i++){
+				mod1[i] = new Pair(3*i+1, 3*(i+1)+1);
+				mod2[i] = new Pair(3*i+2, 3*(i+1)+2);
 			}
 		}
-		for(int i=1;i<n ;i++){
-			if(i % 3 == 2 && input.substring(i).length()>=3){
-				mod2_s.add(input.substring(i, i+3));
+		
+		else if(n%3==1){
+			mod1 = new Pair[(int)Math.floorDiv(n, 3)];
+			mod2 = new Pair[(int)Math.floorDiv(n, 3)-1];
+			int i;
+			for(i=0; i<mod2.length; i++){
+				mod1[i] = new Pair(3*i+1, 3*(i+1)+1);
+				mod2[i] = new Pair(3*i+2, 3*(i+1)+2);
 			}
+			mod1[i] = new Pair(3*i+1, 3*(i+1)+1);
 		}
-		mod1_s.addAll(mod2_s);
-		mod12 =(String []) mod1_s.toArray(new String[mod1_s.size()]);
-		rs = new RadixSort();
+		
+		else{
+			mod1 = new Pair[(int)Math.floorDiv(n, 3)-1];
+			mod2 = new Pair[(int)Math.floorDiv(n, 3)];
+			
+			int i;
+			for(i=0; i<mod1.length; i++){
+				mod1[i] = new Pair(3*i+1, 3*(i+1)+1);
+				mod2[i] = new Pair(3*i+2, 3*(i+1)+2);
+			}
+			mod2[i] = new Pair(3*i+1, 3*(i+1)+1);
+		}
+		
+		mod12 = ArrayUtils.addAll(mod1,mod2);
+		
+		mod1 = null;
+		mod2 =null;
+		System.gc();
 		
 	}
 	
 	public void assignToken(){
 		
-		String [] aux_array = new String[mod12.length];
-		for(int i=0; i<mod12.length;i++)
-			aux_array[i] = mod12[i];
+		System.err.println("assignToken");
+		Pair [] aux_mod12 = mod12.clone();
 		
-		rs.sort(aux_array);
+		RadixSort rs = new RadixSort(input);
+		rs.sort(aux_mod12);
+
 		
-		for(int i = 0; i<mod12.length; i++){
-			
-			if(!mapped_token.containsKey(aux_array[i])){
-				//System.err.println(String.format("String: %s, char: %c", aux_array[i], d));
-				mapped_token.put(aux_array[i], d);
+		for(int i = 0; i<aux_mod12.length; i++){
+			String s = input.substring(aux_mod12[i].getX(), aux_mod12[i].getY());
+			if(!mapped_token.containsKey(s)){
+				mapped_token.put(s, d);
 				d++;
 			}
 		}
-
+		
+		aux_mod12 =null;
+		rs =null;
+		System.gc();
 	}
 	
 
@@ -93,36 +122,50 @@ public class SuffixArray {
 	}
 
 	public void writeTokenizedString(){
-		
+		System.err.println("writeTokenizedString");
+		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<mod12.length; i++){
-				token_string += mapped_token.get(mod12[i]);
+			String s = input.substring(mod12[i].getX(), mod12[i].getY());
+			sb.append(mapped_token.get(s));
 
 		}
+		token_string= sb.toString();
+		
+		//mod12 = null;
+		//System.gc();
 	}
 	
 	public void buildTokenStringSA(){
-		
-		LinkedList<String> suffixes = new LinkedList<String>();
-		
-		for(int i=0; i<token_string.length();i++)
-			suffixes.add(token_string.substring(i));
-		
-		tokenSA = suffixes.toArray(new String[suffixes.size()]);
-		
-		
+		System.err.println("buildTokenStringSA");
+		tokenSA = new Pair[token_string.length()];
+		for(int i=0; i<token_string.length();i++){
+			tokenSA[i] = new Pair(i, token_string.length());
+
+		}
+		RadixSort rs = new RadixSort(token_string);
 		rs.sort(tokenSA);
 
-		
+		rs =null;
+		System.gc();
 	}
 	
 	public void buildAndSortMod0(){
-		LinkedList<String> mod0_l = new LinkedList<String>();
-		for(int i=0; i<n; i++){
-			if(i % 3 ==0 && input.substring(i).length()>=3)
-				mod0_l.add(input.substring(i));
+		System.err.println("buildAndSortMod0");
+		if(n%3 ==0)
+			mod0 = new Pair[(int)Math.floorDiv(n,3)];
+		else if(n%3!=0)
+			mod0 = new Pair[(int)Math.floorDiv(n,3)-1];
+		
+		
+		for(int i=0; i<mod0.length; i++){
+			mod0[i] = new Pair(i*3,n);
 		}
-		mod0 = (String []) mod0_l.toArray(new String [mod0_l.size()]);
+		
+		RadixSort rs = new RadixSort(input);
 		rs.sort(mod0);
+		
+		rs = null;
+		System.gc();
 	}
 	
 	public String getKey(char c){
@@ -138,7 +181,7 @@ public class SuffixArray {
 	
 	public String getSuffixFromTokenString(int i){
 		
-		String tofind = tokenSA[i];
+		String tofind = token_string.substring(tokenSA[i].x, tokenSA[i].y);
 		StringBuilder sb = new StringBuilder();
 		
 		for(int j=0;j<tofind.length(); j++)
@@ -148,52 +191,102 @@ public class SuffixArray {
 		return sb.toString();
 	} 
 	
-	public void buildSA(){
+	public void seeMod12(){
 		
-		SA = new String[mod12.length + mod0.length];
+		int x;
+		for(int i=0; i<mod12.length; i++){
+			String mod12_string = getSuffixFromTokenString(i);
+			int delim = mod12_string.indexOf("$$");
+			if(delim>-1)
+				mod12_string = mod12_string.substring(0, delim+1);
+			
+			x=input.indexOf(mod12_string);
+			mod12[i].setX(x);
+			mod12[i].setY(input.length());
+		}
+		
+	}
+	
+	
+	
+	public void buildSA(){
+		System.err.println("buildSA");
+		SA = new Pair[mod12.length + mod0.length];
 		int index12 = 0;
 		int index0 = 0;
-		int delim;
-		for(int i=0; i<SA.length && index12<mod12.length; i++){
-			String mod12_string = getSuffixFromTokenString(index12);
-			if(index0<mod0.length && mod12_string.compareTo(mod0[index0])>=0){
-				delim = mod0[index0].indexOf("$");
-				if(delim>-1)
-					SA[i]=mod0[index0].substring(0, delim);
-				else
-					SA[i]=mod0[index0];
+
+		
+		for(int i=0; i<SA.length; i++){
+			if(index12<mod12.length && index0<mod0.length){
+				String mod12_string =input.substring(mod12[index12].x,mod12[index12].y);
+				String mod0_string = input.substring(mod0[index0].x,mod0[index0].y);
+				
+				if(mod12_string.compareTo(mod0_string)>=0){
+					SA[i]=new Pair(mod0[index0].x, mod0[index0].y);
+					index0++;
+				}
+				else if(mod12_string.compareTo(mod0_string)<0){
+
+					SA[i]=new Pair(mod12[index12].x, mod12[index12].y);
+					index12++;
+					
+				}
+			}
+			
+			else if(index0<mod0.length && index12>=mod12.length){
+				SA[i]=new Pair(mod0[index0].x, mod0[index0].y);
 				index0++;
-				
 			}
-			else if(index0<mod0.length && mod12_string.compareTo(mod0[index0])<0){
-				delim = mod12_string.indexOf("$");
-				if(delim>-1)
-					SA[i] = mod12_string.substring(0, delim);
-				else
-					SA[i]=mod12_string;
-				index12++;
-				
-			}
-			else{
-				SA[i]=mod12_string;
+			
+			else if(index12<mod12.length && index0>=mod0.length){
+				SA[i]=new Pair(mod12[index12].x, mod12[index12].y);
 				index12++;
 			}
+			
+			else break;
 		}
+
 		exec_time = System.currentTimeMillis()-exec_time;
 		System.err.println(exec_time);
 	}
 	
-	public int patternExists(){
+	public void skew(){
+		createMod120();
+		buildAndSortMod0();
+		assignToken();
+		writeTokenizedString();
+		buildTokenStringSA();
+		buildSA();
+	}
+	
+	public void show(Pair [] p, String s){
+		
+		for(int i=0;i<p.length;i++)
+			System.out.println(s.substring(p[i].x, p[i].y));
+	}
+	
+	public void search(){
+		System.err.println("Searching words in serach method");
+		for(int i=0;i<words.length;i++)
+			System.err.println(occurrences(words[i]));
+	}
+	
+	public int occurrences(String s){
 		
 		int occur = 0;
 		
+		for(int i=0; i<SA.length;i++){
+			String aux = input.substring(SA[i].x, SA[i].y);
+			if(aux.charAt(0)==s.charAt(0) && aux.indexOf(s)==0)
+				occur++;
+			else if(aux.charAt(0)>s.charAt(0))
+				break;
+				
+		}
 		return occur;
 	}
 	
-	
-	public int [] merge(int [] S, int [] comp_S){
-		return suffix_array;
-	}
+
 
 	public String getToken_string() {
 		return token_string;

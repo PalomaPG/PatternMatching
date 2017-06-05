@@ -95,6 +95,13 @@ public class TextPreprocessing {
 		resulting_string=resulting_string.replaceAll("\t", "").replaceAll(" ", "");
 	}
 
+	public void preprocessText() throws Exception{
+		
+		preprocessing();
+		selectWords();
+		removeSpaces();
+		
+	}
 	public LinkedList<String> getRandom_words() {
 		return random_words;
 	}

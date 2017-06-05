@@ -4,37 +4,42 @@ public class RadixSort {
 
 	private  Random random;
 	private static long seed;
+	String in;
+
 	
-	public RadixSort(){
+	public RadixSort(String in){
 		seed = System.currentTimeMillis();
 		random = new Random(seed);
+		this.in = in;
+	
 		}
 	
 	
-    public void sort(Comparable[] a) {
+    public void sort(Pair[] a) {
         shuffle(a);
-        sort(a, 0, a.length - 1);
+        sort(a, 0, a.length -1);
         assert isSorted(a);
     }
 
-    public void shuffle(Object[] a) {
+    public void shuffle(Pair [] a) {
         if (a == null) throw new IllegalArgumentException("argument array is null");
         int n = a.length;
         for (int i = 0; i < n; i++) {
             int r = i + uniform(n-i);     // between i and n-1
-            Object temp = a[i];
+            Pair temp = a[i];
             a[i] = a[r];
             a[r] = temp;
         }
     }
     // quicksort the subarray a[lo .. hi] using 3-way partitioning
-    private void sort(Comparable[] a, int lo, int hi) {
+    private void sort(Pair[] a, int lo, int hi) {
         if (hi <= lo) return;
         int lt = lo, gt = hi;
-        Comparable v = a[lo];
+        String v = in.substring(a[lo].x, a[lo].y);
         int i = lo;
         while (i <= gt) {
-            int cmp = a[i].compareTo(v);
+        	String ai = in.substring(a[i].x, a[i].y);
+            int cmp = ai.compareTo(v);
             if      (cmp < 0) exch(a, lt++, i++);
             else if (cmp > 0) exch(a, i, gt--);
             else              i++;
@@ -68,13 +73,16 @@ public class RadixSort {
    /***************************************************************************
     *  Check if array is sorted - useful for debugging.
     ***************************************************************************/
-    private boolean isSorted(Comparable[] a) {
+    private boolean isSorted(Pair[] a) {
         return isSorted(a, 0, a.length - 1);
     }
 
-    private boolean isSorted(Comparable[] a, int lo, int hi) {
-        for (int i = lo + 1; i <= hi; i++)
-            if (less(a[i], a[i-1])) return false;
+    private boolean isSorted(Pair[] a, int lo, int hi) {
+        for (int i = lo + 1; i <= hi; i++){
+        	String ai = in.substring(a[i].x, a[i].y+1);
+        	String ai1 = in.substring(a[i-1].x, a[i-1].y+1);
+            if (less(ai, ai1)) return false;
+        }
         return true;
     }
 

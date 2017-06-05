@@ -10,17 +10,14 @@ public class Tests {
 	
 	private File dir_txts;
 	private File [] files;
-	private String path_results;
 	private String SA_results_csv;
 	private long [] test_exec_time;
 	private int [] n;
 	private int n_texts;
-	private SuffixArray [] SA_tests;
-	private TextPreprocessing [] tps;
+
 	
-	public Tests(String path_results, String path_txts, String SA_results_csv){
+	public Tests(String path_txts, String path_results){
 		
-		this.path_results = path_results;
 		dir_txts = new File(path_txts);
 		this.SA_results_csv = SA_results_csv;
 		
@@ -39,8 +36,31 @@ public class Tests {
 
 	}
 	
+	public void iterTests(){
+		
+		int i = 0;
+		for(File f : files){
+			testBuild(f.getAbsolutePath(), i);
+			i++;
+		}
+	}
+	
+	public void testBuild(String input,int i){
+		
+		TextPreprocessing tp = new TextPreprocessing(input);
+		try {
+			tp.preprocessText();
 
-	public void testBuild(String input){
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.err.println("Something wrong happened at proprocessing phase");
+			e.printStackTrace();
+		}
+		SuffixArray sa = new SuffixArray(tp.getResulting_string(), tp.getRandom_words().toArray(new String [tp.getRandom_words().size()]));
+		sa.skew();
+		n[i] = sa.getN();
+		test_exec_time[i]=sa.getExec_time();
 		
 	}
 	
