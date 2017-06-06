@@ -5,7 +5,14 @@ import suffix_array.*;
 
 import java.io.File;
 
+import automata.KMP;
+
 public class Main {
+	
+	static char [] alphabet_test= {'a', 'b', 'c', 'd', 'e', 'f',
+			'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+			'1','2', '3', '4', '5', '6', '7', '8', '9', '0'}; 
 
 	public static void main(String [] args){
 		
@@ -16,13 +23,26 @@ public class Main {
 		//testRadix();
 		//testMods();
 		//testTokenString();
-		testTests(args[0], args[1]);
+		//testTests(args[0], args[1]);
+		testFA();
 		
 		
 	}
 	
+	public static void testFA(){
+		String pattern="ACACAGA";
+		//String pattern ="chopito";
+		char [] alphabet = {'A', 'C', 'G', 'T'};
+		
+		String input ="AC";
+		
+		KMP kmp = new KMP(pattern, input, alphabet);
+		kmp.buildAutomaton();
+		kmp.showFA();
+	}
+	
 	public static void testMods(){
-		String input = "Holaquehacetodoeldiatrabajandocomounallamahjjfhjhewihdjasabachchopitoeraungatoqienodjsasjnewnjksdjfbbweiuweidnejw$$";
+		String input = "Holaquehacetodoeld123iatrabajandocomounallamahjjfhjhewihdjasabachchopitoeraungatoqienodjsasjnewnjksdjfbbweiuweidnej123w$$";
 		//String input = "mississippi$$";
 		String [] words = {"que", "hew"};
 		SuffixArray sa = new SuffixArray(input,words );

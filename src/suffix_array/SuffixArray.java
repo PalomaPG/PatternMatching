@@ -1,11 +1,7 @@
 package suffix_array;
 
-import java.lang.management.MemoryUsage;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
 
