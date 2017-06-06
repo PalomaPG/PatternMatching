@@ -16,6 +16,11 @@ public class Tests {
 	private int n_texts;
 
 	
+	private char [] alphabet= {'a', 'b', 'c', 'd', 'e', 'f',
+			'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+			'1','2', '3', '4', '5', '6', '7', '8', '9', '0'}; 
+	
 	public Tests(String path_txts, String path_results){
 		
 		dir_txts = new File(path_txts);
@@ -57,8 +62,10 @@ public class Tests {
 			System.err.println("Something wrong happened at proprocessing phase");
 			e.printStackTrace();
 		}
-		SuffixArray sa = new SuffixArray(tp.getResulting_string(), tp.getRandom_words().toArray(new String [tp.getRandom_words().size()]));
+		String [] words2search = tp.getRandom_words().toArray(new String [tp.getRandom_words().size()]);
+		SuffixArray sa = new SuffixArray(tp.getResulting_string(), words2search);
 		sa.skew();
+		
 		n[i] = sa.getN();
 		test_exec_time[i]=sa.getExec_time();
 		

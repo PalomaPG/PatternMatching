@@ -30,15 +30,16 @@ public class Main {
 	}
 	
 	public static void testFA(){
-		String pattern="ACACAGA";
-		//String pattern ="chopito";
+		//String pattern="ACACAGA";
+		String pattern ="chopito";
 		char [] alphabet = {'A', 'C', 'G', 'T'};
 		
-		String input ="AC";
+		String input ="elgatochopitocomemuchoasiquelecambiaronlacomidachopitonolegustochopitocadavezpediamascomida";
 		
-		KMP kmp = new KMP(pattern, input, alphabet);
+		KMP kmp = new KMP(pattern, input, alphabet_test);
 		kmp.buildAutomaton();
 		kmp.showFA();
+		kmp.search();
 	}
 	
 	public static void testMods(){

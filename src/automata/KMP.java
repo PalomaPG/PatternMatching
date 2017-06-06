@@ -6,11 +6,6 @@ public class KMP {
 	private String input;
 	final char [] alphabet;
 	
-	char [] alphabet_test= {'a', 'b', 'c', 'd', 'e', 'f',
-			'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-			'1','2', '3', '4', '5', '6', '7', '8', '9', '0'}; 
-	
 	private int [][] FA;
 	
 	public KMP(String pattern, String input, char [] alphabet){
@@ -49,6 +44,27 @@ public class KMP {
 				return getState(substring.substring(1), string);
 			else return substring.length();
 		}
+	}
+	
+	public void search(){
+		int state = 0;
+		int occur = 0;
+		for(int i=0; i<input.length();i++){
+			state = FA[charInAlphabet(input.charAt(i))][state];
+			if(state==pattern.length()) occur++;
+		}
+		System.err.println(occur);
+	}
+	
+	public int charInAlphabet(char c){
+		
+		int index = 0;
+		for(int i=0; i<alphabet.length; i++){
+			if(alphabet[i]==c){
+				index=i;
+			}
+		}
+		return index;
 	}
 	
 	public void showFA(){
