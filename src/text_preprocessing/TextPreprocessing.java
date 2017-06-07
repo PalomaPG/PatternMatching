@@ -48,8 +48,6 @@ public class TextPreprocessing {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
 	}
 
 	public String standarizeString(String input){
