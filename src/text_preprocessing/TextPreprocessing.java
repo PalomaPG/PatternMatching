@@ -11,21 +11,21 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class TextPreprocessing {
 
-	private String text_path;
+	
 	private String resulting_string;
 	private LinkedList<String> random_words;
 
 	private int N;
 	
-	public TextPreprocessing(String text){
+	public TextPreprocessing(){
 		
-		setText_path(text);
+
 		resulting_string="";
 		setN(0);
 		random_words= new LinkedList<String>();
 	}
 	
-	public void preprocessing(){
+	public void preprocessing(String text_path){
 
 		BufferedReader br;
 		String line;
@@ -51,7 +51,7 @@ public class TextPreprocessing {
 		
 		
 	}
-	
+
 	public String standarizeString(String input){
 		
 		if(input==null) return "";
@@ -63,45 +63,60 @@ public class TextPreprocessing {
 		return input;
 	}
 	
+	
+	public void minWords() throws Exception{
+		String [] splitted = resulting_string.split(" |\t");
+		if(splitted.length<Math.pow(2.0, 15))
+			throw new Exception("There's no enough words!");
+		else{
+			System.err.println(String.format("There are enough words: 2^ %f", Math.log(splitted.length)/Math.log(2.0)));
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i<(int)Math.pow(2.0, 15); i++){
+				sb.append(splitted[i]);
+				sb.append(" ");
+			}
+			resulting_string = sb.toString();
+			
+		}
+		
+		splitted = null;
+		System.gc();
+	}
+	
+	public void dupText(){
+		resulting_string += " "+resulting_string;
+	}
+	
 	public void selectWords() throws Exception{
 		
+		random_words = null;
+		System.gc();
+		random_words = new LinkedList<String>();
 		String [] splitted = resulting_string.split(" |\t");
-		int len = splitted.length;
-		double approx;
-		int i;
-		for(i = 15; i<=25;i++){
-			approx = Math.pow(2.0, i);
-			if(len<=approx+approx*0.5 && len>approx-approx*0.5){
-				setN((int)approx);
-				break;
-			}
-		}
-		if(N==0) throw new Exception("There are not enough words or number of words exceeds the superior limit\n");
-		else System.out.println(String.format("There are enough words to proceed: %d, 2^%d words", getN(),i));
+		System.err.println(Math.log(splitted.length)/Math.log(2.0));
+		N = splitted.length;
+
+
 		int n_words = N/10;
 		int rnd;
 		
 		for(int j=0;j<n_words;j++){
 			/*Generate random numbers*/
-			rnd = ThreadLocalRandom.current().nextInt(0, len);
-			while(splitted[rnd].equals("")) rnd = ThreadLocalRandom.current().nextInt(0, len);
+			rnd = ThreadLocalRandom.current().nextInt(0, N);
+			while(splitted[rnd].equals("")) rnd = ThreadLocalRandom.current().nextInt(0, N);
 			random_words.add(splitted[rnd]);
 			//System.out.println(String.format("Word: %s, number %d",splitted[rnd], rnd));
 		}
-		
+		splitted=null;
+		System.gc();
 	}
 	
-	public void removeSpaces(){
-		resulting_string=resulting_string.replaceAll("\t", "").replaceAll(" ", "");
+	public String removeSpaces(String toRemove){
+		return toRemove.replaceAll("\t", "").replaceAll(" ", "");
+		
 	}
 
-	public void preprocessText() throws Exception{
-		
-		preprocessing();
-		selectWords();
-		removeSpaces();
-		
-	}
+
 	public LinkedList<String> getRandom_words() {
 		return random_words;
 	}
@@ -116,14 +131,6 @@ public class TextPreprocessing {
 
 	public void setResulting_string(String resulting_string) {
 		this.resulting_string = resulting_string;
-	}
-
-	public String getText_path() {
-		return text_path;
-	}
-
-	public void setText_path(String text_path) {
-		this.text_path = text_path;
 	}
 
 	public int getN() {

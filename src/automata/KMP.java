@@ -5,18 +5,21 @@ public class KMP {
 	private String pattern;
 	private String input;
 	final char [] alphabet;
-	
+	private long build_time;
+	private long search_time;
 	private int [][] FA;
+
 	
 	public KMP(String pattern, String input, char [] alphabet){
 		this.pattern = pattern;
 		this.input = input;
 		FA = new int [alphabet.length][pattern.length()+1];
 		this.alphabet = alphabet;
+		
 	}
 	
 	public void buildAutomaton(){
-		
+		setBuild_time(System.currentTimeMillis());
 		for(int i=0;i<=pattern.length(); i++){
 			for(int j=0;j<alphabet.length; j++){
 				if(i<pattern.length() && pattern.charAt(i)==alphabet[j] ){
@@ -32,6 +35,7 @@ public class KMP {
 				}
 			}
 		}
+		setBuild_time(System.currentTimeMillis()-build_time);
 	}
 	
 	public int getState(String substring, String string){
@@ -46,16 +50,28 @@ public class KMP {
 		}
 	}
 	
-	public void search(){
+	public int search(){
 		int state = 0;
 		int occur = 0;
+		search_time = System.currentTimeMillis();
 		for(int i=0; i<input.length();i++){
 			state = FA[charInAlphabet(input.charAt(i))][state];
 			if(state==pattern.length()) occur++;
 		}
-		System.err.println(occur);
+		
+		search_time = System.currentTimeMillis()-search_time;
+		//System.err.println(String.format("Word: %s, # occurrences", pattern,occur));
+		return occur;
 	}
 	
+	public long getSearch_time() {
+		return search_time;
+	}
+
+	public void setSearch_time(long search_time) {
+		this.search_time = search_time;
+	}
+
 	public int charInAlphabet(char c){
 		
 		int index = 0;
@@ -79,5 +95,13 @@ public class KMP {
 		}
 		
 		System.err.println(sb.toString());
+	}
+
+	public long getBuild_time() {
+		return build_time;
+	}
+
+	public void setBuild_time(long build_time) {
+		this.build_time = build_time;
 	}
 }

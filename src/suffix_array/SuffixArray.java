@@ -1,5 +1,6 @@
 package suffix_array;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -18,7 +19,7 @@ public class SuffixArray {
 	int n;
 	private String input;
 	char d;
-	private long exec_time;
+	private long build_time, search_time;
 	
 	public SuffixArray(String input, String [] words){
 		d=100;
@@ -40,8 +41,8 @@ public class SuffixArray {
 
 	public void createMod120(){
 		/*This could not be a multiple of 3*/
-		System.err.println("createMod120");
-		exec_time = System.currentTimeMillis();
+		//System.err.println("createMod120");
+		build_time = System.currentTimeMillis();
 		Pair [] mod1, mod2;
 		
 		if(n%3==0){
@@ -87,7 +88,7 @@ public class SuffixArray {
 	
 	public void assignToken(){
 		
-		System.err.println("assignToken");
+		//System.err.println("assignToken");
 		Pair [] aux_mod12 = mod12.clone();
 		
 		RadixSort rs = new RadixSort(input);
@@ -109,16 +110,16 @@ public class SuffixArray {
 	
 
 	
-	public long getExec_time() {
-		return exec_time;
+	public long getbuild_time() {
+		return build_time;
 	}
 
-	public void setExec_time(long exec_time) {
-		this.exec_time = exec_time;
+	public void setbuild_time(long build_time) {
+		this.build_time = build_time;
 	}
 
 	public void writeTokenizedString(){
-		System.err.println("writeTokenizedString");
+		//System.err.println("writeTokenizedString");
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<mod12.length; i++){
 			String s = input.substring(mod12[i].getX(), mod12[i].getY());
@@ -132,7 +133,7 @@ public class SuffixArray {
 	}
 	
 	public void buildTokenStringSA(){
-		System.err.println("buildTokenStringSA");
+		//System.err.println("buildTokenStringSA");
 		tokenSA = new Pair[token_string.length()];
 		for(int i=0; i<token_string.length();i++){
 			tokenSA[i] = new Pair(i, token_string.length());
@@ -146,7 +147,7 @@ public class SuffixArray {
 	}
 	
 	public void buildAndSortMod0(){
-		System.err.println("buildAndSortMod0");
+		//System.err.println("buildAndSortMod0");
 		if(n%3 ==0)
 			mod0 = new Pair[(int)Math.floorDiv(n,3)];
 		else if(n%3!=0)
@@ -203,8 +204,6 @@ public class SuffixArray {
 		
 	}
 	
-	
-	
 	public void buildSA(){
 		System.err.println("buildSA");
 		SA = new Pair[mod12.length + mod0.length];
@@ -242,8 +241,8 @@ public class SuffixArray {
 			else break;
 		}
 
-		exec_time = System.currentTimeMillis()-exec_time;
-		System.err.println(exec_time);
+		build_time = System.currentTimeMillis()-build_time;
+		//System.err.println(build_time);
 	}
 	
 	public void skew(){
@@ -261,16 +260,17 @@ public class SuffixArray {
 			System.out.println(s.substring(p[i].x, p[i].y));
 	}
 	
-	public void search(){
-		System.err.println("Searching words in serach method");
-		for(int i=0;i<words.length;i++)
-			System.err.println(occurrences(words[i]));
+	public void search(PrintWriter pw){
+		System.err.println("Searching words in search method");
+		for(int i=0;i<words.length;i++){
+			occurrences(words[i], pw);
+		}
 	}
 	
-	public int occurrences(String s){
+	public int occurrences(String s, PrintWriter pw){
 		
 		int occur = 0;
-		
+		long delta = System.currentTimeMillis();
 		for(int i=0; i<SA.length;i++){
 			String aux = input.substring(SA[i].x, SA[i].y);
 			if(aux.charAt(0)==s.charAt(0) && aux.indexOf(s)==0)
@@ -279,10 +279,21 @@ public class SuffixArray {
 				break;
 				
 		}
+		delta= System.currentTimeMillis()-search_time;
+		pw.print(String.format("%d, %l, %d\n",s.length(), delta, occur));
+		search_time +=delta;
 		return occur;
 	}
 	
 
+
+	public long getSearch_time() {
+		return search_time;
+	}
+
+	public void setSearch_time(long search_time) {
+		this.search_time = search_time;
+	}
 
 	public String getToken_string() {
 		return token_string;
