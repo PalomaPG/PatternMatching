@@ -60,22 +60,6 @@ public class Main {
 		kmp.search();
 	}
 	
-	public static void testMods(){
-		String input = "Holaquehacetodoeld123iatrabajandocomounallamahjjfhjhewihdjasabachchopitoeraungatoqienodjsasjnewnjksdjfbbweiuweidnej123w$$";
-		//String input = "mississippi$$";
-		String [] words = {"que", "hew"};
-		SuffixArray sa = new SuffixArray(input,words );
-		sa.createMod120();
-		sa.assignToken();
-		sa.writeTokenizedString();
-		sa.buildTokenStringSA();
-		sa.buildAndSortMod0();
-		sa.seeMod12();
-		sa.buildSA();
-		
-	}
-
-	
 
 	public static void testRadix(){
 		
@@ -107,7 +91,7 @@ public class Main {
 		try {
 			tpp.minWords();
 			
-			for(int i=0; i<=3; i++){
+			for(int i=0; i<=10; i++){
 				n_words[i]=i+15;
 				tpp.selectWords();
 				String [] words = (String [])tpp.getRandom_words().toArray(new String[tpp.getRandom_words().size()]);
@@ -144,7 +128,7 @@ public class Main {
 						kmp.buildAutomaton();
 						DFA_build_r[i] +=kmp.getBuild_time();
 						int occur =kmp.search();
-						FDA_writer.print(String.format("%d, %l, %d\n", words[i].length(), kmp.getSearch_time(), occur));
+						FDA_writer.print(String.format("%d, %d, %d\n", words[i].length(), kmp.getSearch_time(), occur));
 
 						DFA_search_r[i] +=kmp.getSearch_time();
 					}
@@ -171,7 +155,7 @@ public class Main {
 		try {
 			PrintWriter pw = new PrintWriter(file_path, "UTF-8");
 			for(int i=0; i<array1.length; i++){
-				pw.print(String.format("%d,%l,%l\n", n_words[i], array1[i], array2[i]));
+				pw.print(String.format("%d,%d,%d\n", n_words[i], array1[i], array2[i]));
 			}
 			pw.close();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {

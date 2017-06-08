@@ -205,7 +205,7 @@ public class SuffixArray {
 	}
 	
 	public void buildSA(){
-		System.err.println("buildSA");
+		//System.err.println("buildSA");
 		SA = new Pair[mod12.length + mod0.length];
 		int index12 = 0;
 		int index0 = 0;
@@ -261,7 +261,7 @@ public class SuffixArray {
 	}
 	
 	public void search(PrintWriter pw){
-		System.err.println("Searching words in search method");
+		//System.err.println("Searching words in search method");
 		for(int i=0;i<words.length;i++){
 			occurrences(words[i], pw);
 		}
@@ -271,21 +271,57 @@ public class SuffixArray {
 		
 		int occur = 0;
 		long delta = System.currentTimeMillis();
-		for(int i=0; i<SA.length;i++){
-			String aux = input.substring(SA[i].x, SA[i].y);
-			if(aux.charAt(0)==s.charAt(0) && aux.indexOf(s)==0)
-				occur++;
-			else if(aux.charAt(0)>s.charAt(0))
-				break;
-				
-		}
+		int min_ = searchMIN(0, SA.length, s, s.length());
+		int max_ = searchMAX(0, SA.length, s, s.length());
 		delta= System.currentTimeMillis()-search_time;
-		pw.print(String.format("%d, %l, %d\n",s.length(), delta, occur));
+		pw.print(String.format("%d, %d, %d\n",s.length(), delta, occur));
+		occur=max_-min_-1;
 		search_time +=delta;
 		return occur;
 	}
 	
+	public int searchMAX(int init,int end, String pattern, int pattern_length){
+		
+		int mid = (end-init)/2;
+		String aux = input.substring(SA[mid].x, SA[mid].y);
+		if(aux.substring(0,pattern_length).compareTo(pattern)>0){
+			aux = input.substring(SA[mid-1].x, SA[mid-1].y);
+			if(aux.substring(0,pattern_length).compareTo(pattern)==0)
+				return mid;
+			else return searchMAX(init, mid, pattern, pattern_length);
+		}
+		else if(aux.substring(0,pattern_length).compareTo(pattern)<0){
+			return searchMAX(mid, end, pattern, pattern_length);
+		}
+		else{
+			aux = input.substring(SA[mid+1].x, SA[mid+1].y);
+			if(aux.substring(0,pattern_length).compareTo(pattern)>0)
+				return mid+1;
+			else return searchMAX(mid, end, pattern, pattern_length);
+		}
 
+	}
+
+	public int searchMIN(int init,int end, String pattern, int pattern_length){
+		
+		int mid = (end-init)/2;
+		String aux = input.substring(SA[mid].x, SA[mid].y);
+		if(aux.substring(0,pattern_length).compareTo(pattern)<0){
+			aux = input.substring(SA[mid+1].x, SA[mid+1].y);
+			if(aux.substring(0,pattern_length).compareTo(pattern)==0)
+				return mid;
+			else return searchMAX(mid, end, pattern, pattern_length);
+		}
+		else if(aux.substring(0,pattern_length).compareTo(pattern)>0){
+			return searchMAX(init, mid, pattern, pattern_length);
+		}
+		else{
+			aux = input.substring(SA[mid-1].x, SA[mid-1].y);
+			if(aux.substring(0,pattern_length).compareTo(pattern)<0)
+				return mid-1;
+			else return searchMAX(init, mid, pattern, pattern_length);
+		}
+	}
 
 	public long getSearch_time() {
 		return search_time;
