@@ -8,7 +8,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class SuffixArray {
 
-	
 	private Pair [] SA;
 	private String token_string;
 	private Pair [] tokenSA;
@@ -22,13 +21,25 @@ public class SuffixArray {
 	private long build_time, search_time;
 	
 	public SuffixArray(String input, String [] words){
-		d=100;
-		this.input = input;
-		n = input.length();
+		d=48;
+
+		int test= (input.length()-1) % 3;
+		if( test==0){
+			System.err.println("Caso 0");
+			this.input = new StringBuilder().append(input).append("$$$").toString();
+		}
+		else if(test ==1){
+			System.err.println("Caso 1");
+			this.input = new StringBuilder().append(input).append("$$").toString();
+		}
+		else {
+			System.err.println("Caso 2");
+			this.input = new StringBuilder().append(input).append("$").toString();
+		}
+		n = this.input.length();
 		setToken_string("");
 		mapped_token = new HashMap<String, Character>();
 		this.words =words;
-		//suffix_array = new int [n];
 	}
 	
 	public int getN() {
@@ -39,9 +50,8 @@ public class SuffixArray {
 		this.n = n;
 	}
 
-	public void createMod120(){
-		/*This could not be a multiple of 3*/
-		//System.err.println("createMod120");
+	public void createMod12(){
+
 		build_time = System.currentTimeMillis();
 		Pair [] mod1, mod2;
 		
@@ -79,7 +89,7 @@ public class SuffixArray {
 		}
 		
 		mod12 = ArrayUtils.addAll(mod1,mod2);
-		
+
 		mod1 = null;
 		mod2 =null;
 		System.gc();
@@ -87,14 +97,12 @@ public class SuffixArray {
 	}
 	
 	public void assignToken(){
-		
-		//System.err.println("assignToken");
+
 		Pair [] aux_mod12 = mod12.clone();
 		
 		RadixSort rs = new RadixSort(input);
 		rs.sort(aux_mod12);
 
-		
 		for(int i = 0; i<aux_mod12.length; i++){
 			String s = input.substring(aux_mod12[i].getX(), aux_mod12[i].getY());
 			if(!mapped_token.containsKey(s)){
@@ -127,13 +135,9 @@ public class SuffixArray {
 
 		}
 		token_string= sb.toString();
-		
-		//mod12 = null;
-		//System.gc();
 	}
 	
 	public void buildTokenStringSA(){
-		//System.err.println("buildTokenStringSA");
 		tokenSA = new Pair[token_string.length()];
 		for(int i=0; i<token_string.length();i++){
 			tokenSA[i] = new Pair(i, token_string.length());
@@ -141,17 +145,15 @@ public class SuffixArray {
 		}
 		RadixSort rs = new RadixSort(token_string);
 		rs.sort(tokenSA);
-
 		rs =null;
 		System.gc();
 	}
 	
 	public void buildAndSortMod0(){
-		//System.err.println("buildAndSortMod0");
 		if(n%3 ==0)
 			mod0 = new Pair[(int)Math.floorDiv(n,3)];
 		else if(n%3!=0)
-			mod0 = new Pair[(int)Math.floorDiv(n,3)-1];
+			mod0 = new Pair[(int)Math.floorDiv(n,3)];
 		
 		
 		for(int i=0; i<mod0.length; i++){
@@ -160,19 +162,21 @@ public class SuffixArray {
 		
 		RadixSort rs = new RadixSort(input);
 		rs.sort(mod0);
-		
 		rs = null;
 		System.gc();
 	}
 	
-	public String getKey(char c){
+	public String getKey(char look){
 		String string= null;
+		//System.err.println(String.format("MAppedtoken size: %d", mapped_token.size()));
 		for (Entry<String, Character> entry : mapped_token.entrySet()) {
-            if (entry.getValue().equals(c)) {
+            if (entry.getValue().equals(look)) {
                 string=entry.getKey();
+                if(string==null) System.err.println("Es null");
                 break;
             }
 		}
+		if(string==null) System.err.println("Es null: no encuentra llave");
 		return string;
 	}
 	
@@ -185,23 +189,19 @@ public class SuffixArray {
 		{
 			sb.append(getKey(tofind.charAt(j)));
 		}
+
 		return sb.toString();
 	} 
 	
-	public void seeMod12(){
-		
-		int x;
-		for(int i=0; i<mod12.length; i++){
-			String mod12_string = getSuffixFromTokenString(i);
-			int delim = mod12_string.indexOf("$$");
-			if(delim>-1)
-				mod12_string = mod12_string.substring(0, delim+1);
-			
-			x=input.indexOf(mod12_string);
-			mod12[i].setX(x);
-			mod12[i].setY(input.length());
+	public Pair getSuffixAndClean(int i){
+		String mod12_string = getSuffixFromTokenString(i);
+		int delim = mod12_string.indexOf("$");
+		if(delim>-1) {
+			mod12_string=mod12_string.substring(0, delim);
 		}
+		return new Pair(input.indexOf(mod12_string), n);
 		
+		 
 	}
 	
 	public void buildSA(){
@@ -209,22 +209,34 @@ public class SuffixArray {
 		SA = new Pair[mod12.length + mod0.length];
 		int index12 = 0;
 		int index0 = 0;
-
+		String mod12_string=null;
+		String mod0_string = null;
 		
 		for(int i=0; i<SA.length; i++){
 			if(index12<mod12.length && index0<mod0.length){
-				String mod12_string =input.substring(mod12[index12].x,mod12[index12].y);
-				String mod0_string = input.substring(mod0[index0].x,mod0[index0].y);
+				if(mod12_string==null && mod0_string==null){
+					Pair p_mod12 = getSuffixAndClean(index12);
+					mod12_string = input.substring(p_mod12.x,p_mod12.y);
+					mod0_string = input.substring(mod0[index0].x,mod0[index0].y);
+				}
+				
+				else if(mod12_string==null && mod0_string!=null){
+					Pair p_mod12 = getSuffixAndClean(index12);
+					mod12_string = input.substring(p_mod12.x,p_mod12.y);
+				}
+				else{
+					mod0_string = input.substring(mod0[index0].x,mod0[index0].y);
+				}
 				
 				if(mod12_string.compareTo(mod0_string)>=0){
 					SA[i]=new Pair(mod0[index0].x, mod0[index0].y);
 					index0++;
+					mod0_string =null;
 				}
 				else if(mod12_string.compareTo(mod0_string)<0){
-
-					SA[i]=new Pair(mod12[index12].x, mod12[index12].y);
+					SA[i]=getSuffixAndClean(index12);
 					index12++;
-					
+					mod12_string = null;
 				}
 			}
 			
@@ -242,15 +254,14 @@ public class SuffixArray {
 		}
 
 		build_time = System.currentTimeMillis()-build_time;
-		//System.err.println(build_time);
 	}
 	
 	public void skew(){
-		createMod120();
-		buildAndSortMod0();
+		createMod12();
 		assignToken();
 		writeTokenizedString();
 		buildTokenStringSA();
+		buildAndSortMod0();
 		buildSA();
 	}
 	
@@ -261,7 +272,6 @@ public class SuffixArray {
 	}
 	
 	public void search(PrintWriter pw){
-		//System.err.println("Searching words in search method");
 		for(int i=0;i<words.length;i++){
 			occurrences(words[i], pw);
 		}
@@ -269,60 +279,113 @@ public class SuffixArray {
 	
 	public int occurrences(String s, PrintWriter pw){
 		
-		int occur = 0;
+		int occur;
 		long delta = System.currentTimeMillis();
 		int min_ = searchMIN(0, SA.length, s, s.length());
-		int max_ = searchMAX(0, SA.length, s, s.length());
+		int max_ =searchMAX(0, SA.length, s, s.length());
 		delta= System.currentTimeMillis()-search_time;
-		pw.print(String.format("%d, %d, %d\n",s.length(), delta, occur));
 		occur=max_-min_-1;
+		pw.print(String.format("%d, %d, %d\n",s.length(), delta, occur));
 		search_time +=delta;
 		return occur;
 	}
+
+	public static final int NOT_FOUND = -1;
 	
-	public int searchMAX(int init,int end, String pattern, int pattern_length){
+
+	
+	public int searchMIN(int init, int end, String pattern, int p_len){
 		
-		int mid = (end-init)/2;
-		String aux = input.substring(SA[mid].x, SA[mid].y);
-		if(aux.substring(0,pattern_length).compareTo(pattern)>0){
-			aux = input.substring(SA[mid-1].x, SA[mid-1].y);
-			if(aux.substring(0,pattern_length).compareTo(pattern)==0)
-				return mid;
-			else return searchMAX(init, mid, pattern, pattern_length);
+		if(init>end) return NOT_FOUND;
+		if(init==end) return init;
+		if(end-init==1){
+			String aux1 = input.substring(SA[init].x,SA[init].y);
+			String aux2 = input.substring(SA[end].x,SA[end].y);
+			if(aux1.startsWith(pattern) && init==0) return init-1;
+			else{
+				if(!aux1.startsWith(pattern) && aux2.startsWith(pattern)) return init;
+				else if(!aux1.startsWith(pattern) && !aux2.startsWith(pattern)){
+					String aux;
+					if(end<SA.length-1){
+						 aux= input.substring(SA[end+1].x,SA[end+1].y);
+						 if(aux.startsWith(pattern)) return init;
+					}
+					else return NOT_FOUND;
+				}
+				return NOT_FOUND;
+			}
 		}
-		else if(aux.substring(0,pattern_length).compareTo(pattern)<0){
-			return searchMAX(mid, end, pattern, pattern_length);
+
+		int mid = init + (end-init)/2;
+		String aux = input.substring(SA[mid].x,SA[mid].y);
+
+		if(aux.length()>=p_len){
+			if(aux.substring(0,p_len).compareTo(pattern)>= 0)
+				return searchMIN(init, mid-1, pattern, p_len);
+			else{
+				aux = input.substring(SA[mid+1].x,SA[mid+1].y);
+				if(aux.length()<p_len) return searchMIN(mid+1,end, pattern,p_len);
+				else{
+					if(aux.substring(0, p_len).compareTo(pattern)==0) return mid;
+					else return searchMIN(mid+1,end, pattern,p_len);
+				}
+			}
 		}
 		else{
-			aux = input.substring(SA[mid+1].x, SA[mid+1].y);
-			if(aux.substring(0,pattern_length).compareTo(pattern)>0)
-				return mid+1;
-			else return searchMAX(mid, end, pattern, pattern_length);
+			if(aux.compareTo(pattern)>0) return searchMIN(init, mid-1, pattern, p_len);
+			else{
+				aux = input.substring(SA[mid+1].x,SA[mid+1].y);
+				if(aux.length()>=p_len && aux.substring(0, p_len).compareTo(pattern)==0)
+					return mid;
+				else return searchMIN(mid+1,end, pattern, p_len);
+			}
 		}
-
 	}
 
-	public int searchMIN(int init,int end, String pattern, int pattern_length){
+	public int searchMAX(int init, int end, String pattern, int p_len){
 		
-		int mid = (end-init)/2;
-		String aux = input.substring(SA[mid].x, SA[mid].y);
-		if(aux.substring(0,pattern_length).compareTo(pattern)<0){
-			aux = input.substring(SA[mid+1].x, SA[mid+1].y);
-			if(aux.substring(0,pattern_length).compareTo(pattern)==0)
-				return mid;
-			else return searchMAX(mid, end, pattern, pattern_length);
+		if(init>end) return NOT_FOUND;
+		if(init==end) return init;
+		if(end-init==1){
+			String aux1 = input.substring(SA[init].x,SA[init].y);
+			String aux2 = input.substring(SA[end].x,SA[end].y);
+			if(aux2.startsWith(pattern) && end==SA.length-1) return end+1;
+			else if(aux1.startsWith(pattern) && !aux2.startsWith(pattern)) return end;
+			else if(!aux1.startsWith(pattern) && !aux2.startsWith(pattern)){
+				String aux;
+				if(init>0){
+					 aux= input.substring(SA[init-1].x,SA[init-1].y);
+					 if(aux.startsWith(pattern)) return init;
+				}
+				else return NOT_FOUND;
+			}
+			return NOT_FOUND;
 		}
-		else if(aux.substring(0,pattern_length).compareTo(pattern)>0){
-			return searchMAX(init, mid, pattern, pattern_length);
+		int mid = init + (end-init)/2;
+		String aux = input.substring(SA[mid].x,SA[mid].y);
+
+		if(aux.length()>=p_len){
+			if(aux.substring(0,p_len).compareTo(pattern)<= 0)
+				return searchMAX(mid+1, end, pattern, p_len);
+			else{
+				aux = input.substring(SA[mid-1].x,SA[mid-1].y);
+				if(aux.length()<p_len) return searchMAX(init,mid-1, pattern,p_len);
+				else{
+					if(aux.substring(0, p_len).compareTo(pattern)==0) return mid;
+					else return searchMAX(init,mid-1, pattern,p_len);
+				}
+			}
 		}
 		else{
-			aux = input.substring(SA[mid-1].x, SA[mid-1].y);
-			if(aux.substring(0,pattern_length).compareTo(pattern)<0)
-				return mid-1;
-			else return searchMAX(init, mid, pattern, pattern_length);
+			if(aux.compareTo(pattern)<0) return searchMAX(mid+1, end, pattern, p_len);
+			else{
+				aux = input.substring(SA[mid-1].x,SA[mid-1].y);
+				if(aux.length()>=p_len && aux.substring(0, p_len).compareTo(pattern)==0)
+					return mid;
+				else return searchMAX(init,mid-1, pattern, p_len);
+			}
 		}
 	}
-
 	public long getSearch_time() {
 		return search_time;
 	}
@@ -337,6 +400,11 @@ public class SuffixArray {
 
 	public void setToken_string(String token_string) {
 		this.token_string = token_string;
+	}
+
+	public Pair[] getSA() {
+		// TODO Auto-generated method stub
+		return SA;
 	}
 	
 }

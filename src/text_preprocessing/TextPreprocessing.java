@@ -14,21 +14,23 @@ public class TextPreprocessing {
 	
 	private String resulting_string;
 	private LinkedList<String> random_words;
-
+	private int min;
 	private int N;
 	
-	public TextPreprocessing(){
+	public TextPreprocessing(int min){
 		
-
+		this.min = min;
 		resulting_string="";
 		setN(0);
 		random_words= new LinkedList<String>();
 	}
 	
-	public void preprocessing(String text_path){
+	public void preprocessing(String text_path) throws Exception{
 
 		BufferedReader br;
+		StringBuilder sb = new StringBuilder();
 		String line;
+		int count =0;
 		try {
 			
 			br = new BufferedReader(new FileReader(text_path));
@@ -36,7 +38,9 @@ public class TextPreprocessing {
 			while ((line = br.readLine()) != null) {
 				//System.out.println(line);
 				line=standarizeString(line);
-				resulting_string +=line;
+				count +=line.split(" |\t").length;
+				sb.append(line);
+				if(count>=min) break;
 				//System.out.println(line);
 			}
 			
@@ -48,6 +52,11 @@ public class TextPreprocessing {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		if(count<min)
+			throw new Exception("There's no enough words!");
+		resulting_string = sb.toString();
+		
 	}
 
 	public String standarizeString(String input){
@@ -57,32 +66,17 @@ public class TextPreprocessing {
 		/*Removing accents*/
 		input=StringUtils.stripAccents(input).replaceAll("[^a-zA-Z ]", "");
 		input= input.replaceAll("\n", " ");
+		input= input.replaceAll("\t", " ");
 		Normalizer.normalize(input, Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 		return input;
 	}
 	
-	
-	public void minWords() throws Exception{
-		String [] splitted = resulting_string.split(" |\t");
-		if(splitted.length<Math.pow(2.0, 15))
-			throw new Exception("There's no enough words!");
-		else{
-			System.err.println(String.format("There are enough words: 2^ %f", Math.log(splitted.length)/Math.log(2.0)));
-			StringBuilder sb = new StringBuilder();
-			for(int i=0; i<(int)Math.pow(2.0, 15); i++){
-				sb.append(splitted[i]);
-				sb.append(" ");
-			}
-			resulting_string = sb.toString();
-			
-		}
-		
-		splitted = null;
-		System.gc();
-	}
-	
-	public void dupText(){
-		resulting_string += " "+resulting_string;
+	public void dupText(String text_path){
+		StringBuilder sb = new StringBuilder();
+		sb.append(resulting_string).append(" ").append(resulting_string);
+		resulting_string = sb.toString();
+		//setResulting_string(new StringBuilder().append(resulting_string).append(" ").append(resulting_string).toString());
+		//System.err.println(getResulting_string());
 	}
 	
 	public void selectWords() throws Exception{
@@ -90,10 +84,9 @@ public class TextPreprocessing {
 		random_words = null;
 		System.gc();
 		random_words = new LinkedList<String>();
-		String [] splitted = resulting_string.split(" |\t");
-		System.err.println(Math.log(splitted.length)/Math.log(2.0));
+		String [] splitted = resulting_string.split(" |\t|\n");
+		//System.err.println(Math.log(splitted.length)/Math.log(2.0));
 		N = splitted.length;
-
 
 		int n_words = N/10;
 		int rnd;

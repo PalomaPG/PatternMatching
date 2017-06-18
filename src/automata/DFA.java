@@ -1,6 +1,6 @@
 package automata;
 
-public class KMP {
+public class DFA {
 
 	private String pattern;
 	private String input;
@@ -10,7 +10,7 @@ public class KMP {
 	private int [][] FA;
 
 	
-	public KMP(String pattern, String input, char [] alphabet){
+	public DFA(String pattern, String input, char [] alphabet){
 		this.pattern = pattern;
 		this.input = input;
 		FA = new int [alphabet.length][pattern.length()+1];
