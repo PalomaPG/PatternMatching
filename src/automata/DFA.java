@@ -8,7 +8,7 @@ public class DFA {
 	private long build_time;
 	private long search_time;
 	private int [][] FA;
-
+	
 	
 	public DFA(String pattern, String input, char [] alphabet){
 		this.pattern = pattern;
